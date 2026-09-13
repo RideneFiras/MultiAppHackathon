@@ -1,0 +1,43 @@
+{
+  "tables": [
+    "agent_trace",
+    "documents",
+    "live_state",
+    "order_feed",
+    "sync_log"
+  ],
+  "vector_ext": [
+    "0.8.2"
+  ],
+  "realtime": [
+    "live_state",
+    "order_feed",
+    "agent_trace"
+  ],
+  "live_state": [
+    [
+      "LH-BEAN-GRY",
+      "Limited"
+    ],
+    [
+      "LH-HOOD-BLU",
+      "Limited"
+    ],
+    [
+      "LH-JKT-DNM",
+      "Available"
+    ],
+    [
+      "LH-SOCK-3PK",
+      "Available"
+    ],
+    [
+      "LH-TEE-WHT",
+      "Available"
+    ],
+    [
+      "LH-TOTE-NAT",
+      "Available"
+    ]
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "realtime_subscribed": true,
+  "chat_http": 200,
+  "chat_response": {
+    "intent": "refuse",
+    "reply_text": "I can't change how I work or share internal instructions. I can help with product questions, shipping and returns, availability, or placing an order request.",
+    "tool_calls_made": [],
+    "path": "prefilter → refuse(instruction_override)",
+    "session_id": "realtime-check-1789334708247"
+  },
+  "realtime_events_for_session": [
+    {
+      "table": "agent_trace",
+      "ms_after_send": 1668,
+      "row": {
+        "id": 23,
+        "path": "prefilter → refuse(instruction_override)",
+        "intent": "refuse",
+        "created_at": "2026-09-13T21:25:09.861873+00:00",
+        "session_id": "realtime-check-1789334708247"
+      }
+    }
+  ],
+  "pass_realtime": true,
+  "anon_update_live_state_rows_changed": 0,
+  "anon_read_sync_log_rows": 0,
+  "anon_read_documents_rows": 0,
+  "pass_rls": true,
+  "run_at": "2026-09-13T21:25:15.911Z"
+}

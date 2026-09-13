@@ -1,0 +1,22 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# dependencies / builds
+node_modules/
+.next/
+.vercel/
+__pycache__/
+*.pyc
+
+# hackathon working notes kept locally (not part of the submission)
+files.zip
+ops/
+HANDOFF.md
+00_START_HERE.md
+01_CONTEXT.md
+02_TECHNICAL_SPEC.md
+03_DASHBOARD_SPEC.md
+04_DEMO_SCRIPT.md
+05_GOAL_PROMPT.md

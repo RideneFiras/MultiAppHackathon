@@ -1,0 +1,22 @@
+{
+  "chunks": 11,
+  "probe": "What is your return policy?",
+  "top4": [
+    [
+      "03_returns.md",
+      "0.546"
+    ],
+    [
+      "02_shipping.md",
+      "0.362"
+    ],
+    [
+      "06_faq.md",
+      "0.329"
+    ],
+    [
+      "04_pricing_payments.md",
+      "0.292"
+    ]
+  ]
+}

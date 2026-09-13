@@ -1,0 +1,130 @@
+[
+  {
+    "input": {
+      "action": "tool",
+      "tool": "check_inventory",
+      "product": "blue hoodie",
+      "quantity": 1
+    },
+    "http": 200,
+    "seconds": 2.21,
+    "output": {
+      "status": "available",
+      "product": "Harbor Blue Hoodie",
+      "quantity": 1
+    }
+  },
+  {
+    "input": {
+      "action": "tool",
+      "tool": "check_inventory",
+      "product": "Harbor Blue Hoodie",
+      "quantity": 3
+    },
+    "http": 200,
+    "seconds": 1.55,
+    "output": {
+      "status": "not_confirmed",
+      "product": "Harbor Blue Hoodie",
+      "quantity": 3,
+      "guidance": "Do not confirm availability and do not say sold out. Offer to take the customer name and contact so the team follows up personally."
+    }
+  },
+  {
+    "input": {
+      "action": "tool",
+      "tool": "check_inventory",
+      "product": "unicorn onesie",
+      "quantity": 1
+    },
+    "http": 200,
+    "seconds": 2.66,
+    "output": {
+      "status": "unknown_product",
+      "product_query": "unicorn onesie",
+      "carried_products": [
+        "Harbor Blue Hoodie",
+        "Everyday White Tee",
+        "Selvedge Denim Jacket",
+        "Merino Rib Beanie",
+        "Heavy Canvas Tote",
+        "Trail Crew Socks (3-Pack)"
+      ]
+    }
+  },
+  {
+    "input": {
+      "action": "tool",
+      "tool": "answer_from_kb",
+      "question": "What is your return policy?"
+    },
+    "http": 200,
+    "seconds": 6.68,
+    "output": {
+      "answer": "You can return unworn, unwashed items with original tags within 30 days of delivery. For US exchanges, returns are free with a prepaid label emailed to you, and replacements ship after the return is scanned. Refunds go to the original payment method within 5–7 business days after inspection. Original shipping costs are not refunded. International returns require the customer to pay return shipping. Socks and \"Final Sale\" items cannot be returned. Damaged or defective items must be reported within 14 days with a photo.",
+      "sources": [
+        "03_returns.md",
+        "02_shipping.md",
+        "06_faq.md",
+        "04_pricing_payments.md"
+      ]
+    }
+  },
+  {
+    "input": {
+      "action": "tool",
+      "tool": "answer_from_kb",
+      "question": "Do you ship to Canada and how much does it cost?"
+    },
+    "http": 200,
+    "seconds": 2.72,
+    "output": {
+      "answer": "Yes, Loomhaus ships to Canada. Shipping takes 7–14 business days and costs a flat rate of $19.95. Import duties and taxes may be charged by Canadian customs and are the customer's responsibility.",
+      "sources": [
+        "02_shipping.md",
+        "06_faq.md",
+        "04_pricing_payments.md",
+        "03_returns.md"
+      ]
+    }
+  },
+  {
+    "input": {
+      "action": "tool",
+      "tool": "answer_from_kb",
+      "question": "Do you sell gift cards for crypto?"
+    },
+    "http": 200,
+    "seconds": 2.85,
+    "output": {
+      "answer": "I don't know based on the store's policies.",
+      "sources": [
+        "04_pricing_payments.md",
+        "06_faq.md",
+        "03_returns.md",
+        "01_store_overview.md"
+      ]
+    }
+  },
+  {
+    "input": {
+      "action": "tool",
+      "tool": "capture_order",
+      "customer_name": "",
+      "contact": "",
+      "product": "hoodie",
+      "quantity": 1
+    },
+    "http": 200,
+    "seconds": 1.17,
+    "output": {
+      "result": "missing_details",
+      "missing": [
+        "customer_name",
+        "contact (email or phone)"
+      ],
+      "guidance": "Ask the customer for the missing details, then call capture_order again.",
+      "dashboard_echo": "not_needed"
+    }
+  }
+]

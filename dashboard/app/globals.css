@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f2ea;
+  --foreground: #1c1917;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@keyframes lh-flash {
+  from { background-color: rgb(253 230 138 / 0.75); }
+  to { background-color: transparent; }
+}
+.lh-flash { animation: lh-flash 2.4s ease-out; }
+
+@keyframes lh-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+  40% { transform: translateY(-4px); opacity: 1; }
+}
+.lh-dot { animation: lh-bounce 1.2s infinite ease-in-out; }
+.lh-dot:nth-child(2) { animation-delay: 0.15s; }
+.lh-dot:nth-child(3) { animation-delay: 0.3s; }

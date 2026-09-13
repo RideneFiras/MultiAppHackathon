@@ -1,0 +1,362 @@
+{
+  "summary": "20/20 checks passed",
+  "checks": [
+    {
+      "check": "reset demo through the n8n workflow",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "archived_orders": 0,
+        "reset_at": "2026-09-13T21:19:35.389Z"
+      }
+    },
+    {
+      "check": "clean start: Sheet hoodie stock 2 / pending 0",
+      "pass": true,
+      "detail": {
+        "product_id": "LH-HOOD-BLU",
+        "product_name": "Harbor Blue Hoodie",
+        "stock": "2",
+        "pending": "0"
+      }
+    },
+    {
+      "check": "clean start: no active Notion orders",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "check": "A1: availability checked by check_inventory -> available",
+      "pass": true,
+      "detail": "agent → check_inventory(available)"
+    },
+    {
+      "check": "A1: no stock numbers in reply",
+      "pass": true,
+      "detail": "The Harbor Blue Hoodie is available in the quantity of 2. If you'd like, I can help you place an order request."
+    },
+    {
+      "check": "A2: capture_order -> order_captured",
+      "pass": true,
+      "detail": "agent → capture_order(order_captured)"
+    },
+    {
+      "check": "Notion: A's order Pending, Reserved, qty 2, Harbor Blue Hoodie",
+      "pass": true,
+      "detail": [
+        {
+          "page_id": "3daebf8c-efff-81df-a8ec-ebe205ed7d6a",
+          "order_ref": "LH-0BHUV409J",
+          "customer": "Alex Kim",
+          "product": "Harbor Blue Hoodie",
+          "quantity": 2,
+          "status": "Pending",
+          "reserved": true,
+          "inventory_synced": false,
+          "session": "race-A-89c14b",
+          "created_time": "2026-09-13T21:19:00.000Z"
+        }
+      ]
+    },
+    {
+      "check": "Sheet: hoodie pending incremented 0 -> 2 (stock still 2)",
+      "pass": true,
+      "detail": {
+        "product_id": "LH-HOOD-BLU",
+        "product_name": "Harbor Blue Hoodie",
+        "stock": "2",
+        "pending": "2"
+      }
+    },
+    {
+      "check": "B1: check_inventory -> not_confirmed (deterministic IF gate)",
+      "pass": true,
+      "detail": "agent → check_inventory(not_confirmed)"
+    },
+    {
+      "check": "B1: reply neither says sold out nor confirms availability",
+      "pass": true,
+      "detail": "I cannot confirm the availability of the Harbor Blue Hoodie right now. If you like, I can take your name and contact details so our team can follow up with you personally about availability."
+    },
+    {
+      "check": "B2: capture_order -> follow_up_logged",
+      "pass": true,
+      "detail": "agent → capture_order(follow_up_logged)"
+    },
+    {
+      "check": "B2: reply does not confirm the order or say sold out",
+      "pass": true,
+      "detail": "Thank you, Jordan Lee. Your details are saved, and the team will follow up with you personally about the Harbor Blue Hoodie availability. Your reference is LH-0BI5KSIVW."
+    },
+    {
+      "check": "Notion: B logged with Status Follow-up, not Reserved",
+      "pass": true,
+      "detail": [
+        {
+          "page_id": "3daebf8c-efff-81f0-8c43-c102c55260bb",
+          "order_ref": "LH-0BI5KSIVW",
+          "customer": "Jordan Lee",
+          "product": "Harbor Blue Hoodie",
+          "quantity": 1,
+          "status": "Follow-up",
+          "reserved": false,
+          "inventory_synced": false,
+          "session": "race-B-c19c66",
+          "created_time": "2026-09-13T21:20:00.000Z"
+        }
+      ]
+    },
+    {
+      "check": "Sheet: pending NOT incremented for B (still 2)",
+      "pass": true,
+      "detail": {
+        "product_id": "LH-HOOD-BLU",
+        "product_name": "Harbor Blue Hoodie",
+        "stock": "2",
+        "pending": "2"
+      }
+    },
+    {
+      "check": "Supabase echo: order_feed = A Pending + B Follow-up with masked names",
+      "pass": true,
+      "detail": [
+        {
+          "order_ref": "LH-0BHUV409J",
+          "customer_display": "Alex K.",
+          "product_name": "Harbor Blue Hoodie",
+          "quantity": 2,
+          "status": "Pending"
+        },
+        {
+          "order_ref": "LH-0BI5KSIVW",
+          "customer_display": "Jordan L.",
+          "product_name": "Harbor Blue Hoodie",
+          "quantity": 1,
+          "status": "Follow-up"
+        }
+      ]
+    },
+    {
+      "check": "Supabase echo: live_state hoodie = 'Pending team review' (no numbers)",
+      "pass": true,
+      "detail": [
+        {
+          "product_name": "Harbor Blue Hoodie",
+          "status": "Pending team review"
+        }
+      ]
+    },
+    {
+      "check": "Notion API: A's order set to Fulfilled",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "check": "Fulfillment: Sheet stock 2->0, pending 2->0 and Inventory Synced=true in < 60 s",
+      "pass": true,
+      "detail": {
+        "seconds": 28.4,
+        "sheet_hoodie": {
+          "product_id": "LH-HOOD-BLU",
+          "product_name": "Harbor Blue Hoodie",
+          "stock": "0",
+          "pending": "0"
+        }
+      }
+    },
+    {
+      "check": "Supabase echo after fulfillment: A = Fulfilled",
+      "pass": true,
+      "detail": [
+        {
+          "order_ref": "LH-0BHUV409J",
+          "customer_display": "Alex K.",
+          "status": "Fulfilled"
+        },
+        {
+          "order_ref": "LH-0BI5KSIVW",
+          "customer_display": "Jordan L.",
+          "status": "Follow-up"
+        }
+      ]
+    },
+    {
+      "check": "Idempotent: next sync cycle leaves stock 0 / pending 0 (no double decrement)",
+      "pass": true,
+      "detail": {
+        "product_id": "LH-HOOD-BLU",
+        "product_name": "Harbor Blue Hoodie",
+        "stock": "0",
+        "pending": "0"
+      }
+    }
+  ],
+  "transcript": [
+    {
+      "session": "race-A-89c14b",
+      "message": "Hi! Is the Harbor Blue Hoodie available? I'd like 2.",
+      "http": 200,
+      "seconds": 5.45,
+      "response": {
+        "intent": "check_availability",
+        "reply_text": "The Harbor Blue Hoodie is available in the quantity of 2. If you'd like, I can help you place an order request.",
+        "tool_calls_made": [
+          "check_inventory"
+        ],
+        "path": "agent → check_inventory(available)",
+        "session_id": "race-A-89c14b"
+      }
+    },
+    {
+      "session": "race-A-89c14b",
+      "message": "Great, I'll take 2. My name is Alex Kim and my email is alex.kim@example.com",
+      "http": 200,
+      "seconds": 6.22,
+      "response": {
+        "intent": "capture_order",
+        "reply_text": "Your order request for 2 Harbor Blue Hoodies is recorded under reference LH-0BHUV409J. Our team will contact you within 1 business day to confirm and arrange payment. Thank you for shopping with Loomhaus!",
+        "tool_calls_made": [
+          "capture_order"
+        ],
+        "path": "agent → capture_order(order_captured)",
+        "session_id": "race-A-89c14b"
+      }
+    },
+    {
+      "session": "race-B-c19c66",
+      "message": "Do you have the Harbor Blue Hoodie? I want 1.",
+      "http": 200,
+      "seconds": 3.66,
+      "response": {
+        "intent": "check_availability",
+        "reply_text": "I cannot confirm the availability of the Harbor Blue Hoodie right now. If you like, I can take your name and contact details so our team can follow up with you personally about availability.",
+        "tool_calls_made": [
+          "check_inventory"
+        ],
+        "path": "agent → check_inventory(not_confirmed)",
+        "session_id": "race-B-c19c66"
+      }
+    },
+    {
+      "session": "race-B-c19c66",
+      "message": "OK, please have the team follow up with me. I'm Jordan Lee, phone +1 415 555 0199",
+      "http": 200,
+      "seconds": 5.02,
+      "response": {
+        "intent": "capture_order",
+        "reply_text": "Thank you, Jordan Lee. Your details are saved, and the team will follow up with you personally about the Harbor Blue Hoodie availability. Your reference is LH-0BI5KSIVW.",
+        "tool_calls_made": [
+          "capture_order"
+        ],
+        "path": "agent → capture_order(follow_up_logged)",
+        "session_id": "race-B-c19c66"
+      }
+    }
+  ],
+  "evidence": {
+    "after_race": {
+      "notion": [
+        {
+          "page_id": "3daebf8c-efff-81f0-8c43-c102c55260bb",
+          "order_ref": "LH-0BI5KSIVW",
+          "customer": "Jordan Lee",
+          "product": "Harbor Blue Hoodie",
+          "quantity": 1,
+          "status": "Follow-up",
+          "reserved": false,
+          "inventory_synced": false,
+          "session": "race-B-c19c66",
+          "created_time": "2026-09-13T21:20:00.000Z"
+        },
+        {
+          "page_id": "3daebf8c-efff-81df-a8ec-ebe205ed7d6a",
+          "order_ref": "LH-0BHUV409J",
+          "customer": "Alex Kim",
+          "product": "Harbor Blue Hoodie",
+          "quantity": 2,
+          "status": "Pending",
+          "reserved": true,
+          "inventory_synced": false,
+          "session": "race-A-89c14b",
+          "created_time": "2026-09-13T21:19:00.000Z"
+        }
+      ],
+      "sheet_hoodie": {
+        "product_id": "LH-HOOD-BLU",
+        "product_name": "Harbor Blue Hoodie",
+        "stock": "2",
+        "pending": "2"
+      },
+      "order_feed": [
+        {
+          "order_ref": "LH-0BHUV409J",
+          "customer_display": "Alex K.",
+          "product_name": "Harbor Blue Hoodie",
+          "quantity": 2,
+          "status": "Pending"
+        },
+        {
+          "order_ref": "LH-0BI5KSIVW",
+          "customer_display": "Jordan L.",
+          "product_name": "Harbor Blue Hoodie",
+          "quantity": 1,
+          "status": "Follow-up"
+        }
+      ],
+      "live_state": [
+        {
+          "product_name": "Harbor Blue Hoodie",
+          "status": "Pending team review"
+        }
+      ]
+    },
+    "after_fulfillment": {
+      "seconds_to_sync": 28.4,
+      "sheet_hoodie": {
+        "product_id": "LH-HOOD-BLU",
+        "product_name": "Harbor Blue Hoodie",
+        "stock": "0",
+        "pending": "0"
+      },
+      "order_feed": [
+        {
+          "order_ref": "LH-0BHUV409J",
+          "customer_display": "Alex K.",
+          "status": "Fulfilled"
+        },
+        {
+          "order_ref": "LH-0BI5KSIVW",
+          "customer_display": "Jordan L.",
+          "status": "Follow-up"
+        }
+      ],
+      "live_state": [
+        {
+          "product_name": "Harbor Blue Hoodie",
+          "status": "Pending team review",
+          "last_event": "fulfilled LH-0BHUV409J"
+        }
+      ]
+    },
+    "after_idempotency_wait": {
+      "sheet_hoodie": {
+        "product_id": "LH-HOOD-BLU",
+        "product_name": "Harbor Blue Hoodie",
+        "stock": "0",
+        "pending": "0"
+      },
+      "notion_order_a": {
+        "page_id": "3daebf8c-efff-81df-a8ec-ebe205ed7d6a",
+        "order_ref": "LH-0BHUV409J",
+        "customer": "Alex Kim",
+        "product": "Harbor Blue Hoodie",
+        "quantity": 2,
+        "status": "Fulfilled",
+        "reserved": true,
+        "inventory_synced": true,
+        "session": "race-A-89c14b",
+        "created_time": "2026-09-13T21:19:00.000Z"
+      }
+    }
+  }
+}

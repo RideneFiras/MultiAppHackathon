@@ -1,0 +1,81 @@
+{
+  "reset_http": 200,
+  "reset_response": {
+    "ok": true,
+    "archived_orders": 2,
+    "reset_at": "2026-09-13T21:25:42.356Z"
+  },
+  "sheet_values": [
+    [
+      "product_id",
+      "product_name",
+      "stock",
+      "pending"
+    ],
+    [
+      "LH-HOOD-BLU",
+      "Harbor Blue Hoodie",
+      "2",
+      "0"
+    ],
+    [
+      "LH-TEE-WHT",
+      "Everyday White Tee",
+      "40",
+      "0"
+    ],
+    [
+      "LH-JKT-DNM",
+      "Selvedge Denim Jacket",
+      "6",
+      "0"
+    ],
+    [
+      "LH-BEAN-GRY",
+      "Merino Rib Beanie",
+      "3",
+      "0"
+    ],
+    [
+      "LH-TOTE-NAT",
+      "Heavy Canvas Tote",
+      "25",
+      "0"
+    ],
+    [
+      "LH-SOCK-3PK",
+      "Trail Crew Socks (3-Pack)",
+      "12",
+      "0"
+    ]
+  ],
+  "notion_active_orders": 0,
+  "order_feed_rows": 0,
+  "agent_trace_rows": 0,
+  "live_state": [
+    {
+      "product_name": "Everyday White Tee",
+      "status": "Available"
+    },
+    {
+      "product_name": "Harbor Blue Hoodie",
+      "status": "Limited"
+    },
+    {
+      "product_name": "Heavy Canvas Tote",
+      "status": "Available"
+    },
+    {
+      "product_name": "Merino Rib Beanie",
+      "status": "Limited"
+    },
+    {
+      "product_name": "Selvedge Denim Jacket",
+      "status": "Available"
+    },
+    {
+      "product_name": "Trail Crew Socks (3-Pack)",
+      "status": "Available"
+    }
+  ]
+}

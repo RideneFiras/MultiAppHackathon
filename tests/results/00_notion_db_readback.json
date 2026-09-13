@@ -1,0 +1,18 @@
+{
+  "status": 200,
+  "id": "3daebf8c-efff-811f-908f-feda882a123c",
+  "url": "https://app.notion.com/p/3daebf8cefff811f908ffeda882a123c",
+  "properties": [
+    "Contact",
+    "Created",
+    "Customer Name",
+    "Inventory Synced",
+    "Notes",
+    "Order",
+    "Product",
+    "Quantity",
+    "Reserved",
+    "Session",
+    "Status"
+  ]
+}

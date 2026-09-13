@@ -1,0 +1,121 @@
+{
+  "summary": "8/8 checks passed",
+  "checks": [
+    {
+      "check": "deploy workflow with an invalid Notion database id (simulated outage)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "check": "trace shows capture_order(error)",
+      "pass": true,
+      "detail": "agent → check_inventory(available) → capture_order(error)"
+    },
+    {
+      "check": "customer told the request could not be recorded (no false confirmation)",
+      "pass": true,
+      "detail": "Sorry, we couldn't record your order request for the Selvedge Denim Jacket at this moment. Please try again shortly or contact us if the issue continues."
+    },
+    {
+      "check": "Google Sheet pending NOT incremented",
+      "pass": true,
+      "detail": {
+        "before": {
+          "product_id": "LH-JKT-DNM",
+          "product_name": "Selvedge Denim Jacket",
+          "stock": "6",
+          "pending": "0"
+        },
+        "after": {
+          "product_id": "LH-JKT-DNM",
+          "product_name": "Selvedge Denim Jacket",
+          "stock": "6",
+          "pending": "0"
+        }
+      }
+    },
+    {
+      "check": "no Notion page created for the failed order",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "check": "sync_log has an error row for capture_order",
+      "pass": true,
+      "detail": [
+        {
+          "id": 1,
+          "workflow": "capture_order",
+          "step": "notion_create",
+          "level": "error",
+          "detail": {
+            "error": "The resource you are requesting could not be found",
+            "stage": "notion_create",
+            "product": "Selvedge Denim Jacket",
+            "quantity": 1,
+            "order_ref": "LH-0BKPKHUWM"
+          },
+          "created_at": "2026-09-13T21:22:03.202582+00:00"
+        }
+      ]
+    },
+    {
+      "check": "redeploy the normal workflow",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "check": "after restore, subagent healthy (check_inventory -> available)",
+      "pass": true,
+      "detail": {
+        "status": "available",
+        "product": "Selvedge Denim Jacket",
+        "quantity": 1
+      }
+    }
+  ],
+  "evidence": {
+    "sheet_before": {
+      "product_id": "LH-JKT-DNM",
+      "product_name": "Selvedge Denim Jacket",
+      "stock": "6",
+      "pending": "0"
+    },
+    "chat": {
+      "http": 200,
+      "seconds": 6.18,
+      "response": {
+        "intent": "refuse",
+        "reply_text": "Sorry, we couldn't record your order request for the Selvedge Denim Jacket at this moment. Please try again shortly or contact us if the issue continues.",
+        "tool_calls_made": [
+          "check_inventory",
+          "capture_order"
+        ],
+        "path": "agent → check_inventory(available) → capture_order(error)",
+        "session_id": "fail-a784ec38"
+      }
+    },
+    "sheet_after": {
+      "product_id": "LH-JKT-DNM",
+      "product_name": "Selvedge Denim Jacket",
+      "stock": "6",
+      "pending": "0"
+    },
+    "sync_log": [
+      {
+        "id": 1,
+        "workflow": "capture_order",
+        "step": "notion_create",
+        "level": "error",
+        "detail": {
+          "error": "The resource you are requesting could not be found",
+          "stage": "notion_create",
+          "product": "Selvedge Denim Jacket",
+          "quantity": 1,
+          "order_ref": "LH-0BKPKHUWM"
+        },
+        "created_at": "2026-09-13T21:22:03.202582+00:00"
+      }
+    ]
+  }
+}
