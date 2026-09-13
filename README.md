@@ -107,7 +107,7 @@ Two minutes isn't much, so here's the rest. All of it is tested (see [How we tes
 
 **When a customer writes**
 
-<img src="docs/images/architecture.png" alt="Customer message goes through the injection filter, then the orchestrator agent, which uses three subagents connected to Google Sheets, Notion and Supabase" width="620">
+<img src="docs/images/architecture-chat.png" alt="Customer message goes through the injection filter, then the orchestrator agent, which uses three subagents connected to Google Sheets, Notion and Supabase" width="620">
 
 **In the background**
 
