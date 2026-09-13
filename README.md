@@ -105,31 +105,9 @@ Two minutes isn't much, so here's the rest. All of it is tested (see [How we tes
 
 ## How it works
 
-```mermaid
-flowchart LR
-  C["Customer message"] --> PF
-  subgraph N8N["n8n: one workflow"]
-    PF{"Injection filter"}
-    PF -->|attack| RF[Fixed refusal]
-    PF -->|safe| AG["Orchestrator agent<br/>gpt-4.1-mini"]
-    AG --> CI[check_inventory]
-    AG --> CO[capture_order]
-    AG --> KB[answer_from_kb]
-    AG --> OG[Reply check]
-    RF --> RS[Reply to customer]
-    OG --> RS
-    TM[Every 30 s] --> FS[fulfillment_sync]
-  end
-  CI --> GS[(Google Sheets)]
-  CO --> GS
-  CO --> NO[(Notion)]
-  NO -->|order Fulfilled| FS
-  FS --> GS
-  KB --> VEC[(Supabase pgvector)]
-  CO -.-> ECHO[(Supabase echo)]
-  FS -.-> ECHO
-  ECHO -. Realtime .-> DASH[Live dashboard]
-```
+<img src="docs/images/architecture.png" alt="How Loomhaus works: injection filter, orchestrator agent, three subagents, Google Sheets, Notion, Supabase" width="720">
+
+<sub>Red: guardrails · Blue: subagents · Green: the three apps · Diagram source: [docs/architecture.mmd](docs/architecture.mmd)</sub>
 
 The **orchestrator** is an n8n AI Agent (OpenAI `gpt-4.1-mini`) that works out what the customer needs. It can only act through three **subagents**, each a branch of the same n8n workflow:
 
