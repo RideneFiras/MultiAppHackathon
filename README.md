@@ -9,7 +9,10 @@
 
 **Loomhaus is an AI support agent for an online store.** It answers customers, checks what's actually in stock, turns conversations into orders for the team, and won't be talked into a discount.
 
-Built for the [Multi-App AI Agent Hackathon](https://multiappagenthackathon.com/) · **[Watch the 2-minute demo](https://www.youtube.com/watch?v=t3_HilAUTEQ)** · **[Try it live](https://loomhaus-agent.vercel.app)**
+[![Try it live](https://img.shields.io/badge/Try%20it%20live-loomhaus--agent.vercel.app-1f3a5f?style=for-the-badge&logo=vercel&logoColor=white)](https://loomhaus-agent.vercel.app)
+[![Watch the 2-minute demo](https://img.shields.io/badge/Watch%20the%20demo-2%20minutes-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=t3_HilAUTEQ)
+
+Built for the [Multi-App AI Agent Hackathon](https://multiappagenthackathon.com/).
 
 <a href="https://www.youtube.com/watch?v=t3_HilAUTEQ"><img src="https://img.youtube.com/vi/t3_HilAUTEQ/hqdefault.jpg" width="480" alt="Watch the 2-minute demo"></a>
 
