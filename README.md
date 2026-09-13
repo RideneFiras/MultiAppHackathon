@@ -3,7 +3,7 @@
 Loomhaus is a customer-support chat agent for a small clothing store. It answers questions, checks stock, takes order requests and hands them to the team, working inside the store's real tools: **Google Sheets** (inventory), **Notion** (orders) and **Supabase** (knowledge base and live dashboard). Everything runs in one **n8n** workflow.
 
 **Live demo:** https://loomhaus-agent.vercel.app
-**Demo video (2 min):** DEMO_VIDEO_URL
+**Demo video (2 min):** [DEMO_VIDEO_URL](https://www.youtube.com/watch?v=t3_HilAUTEQ)
 
 ![The orchestrator section of the n8n workflow](docs/images/n8n-orchestrator.png)
 
