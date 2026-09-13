@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Loomhaus · AI Support Agent",
-  description: "Multi-app AI support agent: n8n orchestrator + 3 subagents over Google Sheets, Notion and Supabase.",
+  title: "Loomhaus support agent",
+  description: "AI support agent for an online store, connected to Google Sheets, Notion and Supabase through n8n.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,17 +1,13 @@
 """Generate dashboard/.env.local from the root .env and (with --vercel) push the same vars to the Vercel project.
 
 Browser-safe: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY.
-Server-only (route handlers): N8N_CHAT_WEBHOOK_URL, N8N_CHAT_TOKEN, N8N_ADMIN_WEBHOOK_URL, N8N_ADMIN_TOKEN, DEMO_RESET_KEY.
+Server-only (route handlers): N8N_CHAT_WEBHOOK_URL, N8N_CHAT_TOKEN, N8N_ADMIN_WEBHOOK_URL, N8N_ADMIN_TOKEN.
 The Supabase service_role key is never included.
 """
-import secrets
 import subprocess
 import sys
 
-from lh import ROOT, env, set_env
-
-if not env("DEMO_RESET_KEY"):
-    set_env("DEMO_RESET_KEY", "loomhaus-" + secrets.token_hex(3))
+from lh import ROOT, env
 
 base = env("N8N_BASE_URL").rstrip("/")
 VALUES = {
@@ -21,7 +17,6 @@ VALUES = {
     "N8N_CHAT_TOKEN": env("LH_CHAT_TOKEN"),
     "N8N_ADMIN_WEBHOOK_URL": base + "/webhook/loomhaus-admin",
     "N8N_ADMIN_TOKEN": env("LH_ADMIN_TOKEN"),
-    "DEMO_RESET_KEY": env("DEMO_RESET_KEY"),
 }
 (ROOT / "dashboard" / ".env.local").write_text("".join(f"{k}={v}\n" for k, v in VALUES.items()), encoding="utf-8")
 print("wrote dashboard/.env.local")

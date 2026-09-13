@@ -1,9 +1,12 @@
 {
+  "action": "reset_seed",
   "reset_http": 200,
   "reset_response": {
     "ok": true,
-    "archived_orders": 2,
-    "reset_at": "2026-09-13T21:25:42.356Z"
+    "archived_orders": 0,
+    "released_units": 0,
+    "sheet_restored_to_seed": true,
+    "reset_at": "2026-09-13T21:51:40.114Z"
   },
   "sheet_values": [
     [
@@ -54,27 +57,45 @@
   "agent_trace_rows": 0,
   "live_state": [
     {
-      "product_name": "Everyday White Tee",
-      "status": "Available"
-    },
-    {
+      "sheet_row": 2,
       "product_name": "Harbor Blue Hoodie",
+      "stock": 2,
+      "pending": 0,
       "status": "Limited"
     },
     {
-      "product_name": "Heavy Canvas Tote",
+      "sheet_row": 3,
+      "product_name": "Everyday White Tee",
+      "stock": 40,
+      "pending": 0,
       "status": "Available"
     },
     {
-      "product_name": "Merino Rib Beanie",
-      "status": "Limited"
-    },
-    {
+      "sheet_row": 4,
       "product_name": "Selvedge Denim Jacket",
+      "stock": 6,
+      "pending": 0,
       "status": "Available"
     },
     {
+      "sheet_row": 5,
+      "product_name": "Merino Rib Beanie",
+      "stock": 3,
+      "pending": 0,
+      "status": "Limited"
+    },
+    {
+      "sheet_row": 6,
+      "product_name": "Heavy Canvas Tote",
+      "stock": 25,
+      "pending": 0,
+      "status": "Available"
+    },
+    {
+      "sheet_row": 7,
       "product_name": "Trail Crew Socks (3-Pack)",
+      "stock": 12,
+      "pending": 0,
       "status": "Available"
     }
   ]

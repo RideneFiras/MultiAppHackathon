@@ -1,0 +1,43 @@
+{
+  "summary": "4/4 checks passed",
+  "checks": [
+    {
+      "check": "edit the Sheet directly: tote stock 25 -> 24",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "check": "dashboard mirror shows the edited value within one poll (< 45 s)",
+      "pass": true,
+      "detail": {
+        "seconds": 5.3,
+        "live_state": {
+          "stock": 24,
+          "pending": 0,
+          "status": "Available",
+          "sheet_row": 6,
+          "last_event": "sheet mirror"
+        }
+      }
+    },
+    {
+      "check": "restore the Sheet: tote stock 24 -> 25",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "check": "dashboard mirror shows the restored value",
+      "pass": true,
+      "detail": {
+        "seconds": 31.2,
+        "live_state": {
+          "stock": 25,
+          "pending": 0,
+          "status": "Available",
+          "sheet_row": 6,
+          "last_event": "sheet mirror"
+        }
+      }
+    }
+  ]
+}

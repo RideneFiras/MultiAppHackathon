@@ -1,0 +1,217 @@
+{
+  "conversation": [
+    {
+      "customer": "Customer A",
+      "session": "demo-alex-f8a4",
+      "message": "Hi! Is the Harbor Blue Hoodie available? I'd like 2.",
+      "seconds": 4.12,
+      "reply": "The Harbor Blue Hoodie is available in the quantity of 2. If you'd like, I can help you place an order request for them.",
+      "trace": "agent → check_inventory(available)"
+    },
+    {
+      "customer": "Customer A",
+      "session": "demo-alex-f8a4",
+      "message": "Great, I'll take both. I'm Alex Kim, alex.kim@example.com",
+      "seconds": 7.3,
+      "reply": "Your order request for 2 Harbor Blue Hoodies is recorded with reference LH-0CR2XTMAS. Our team will contact you within 1 business day to confirm and arrange payment. Thank you for shopping with Loomhaus!",
+      "trace": "agent → capture_order(order_captured)"
+    },
+    {
+      "customer": "Customer B",
+      "session": "demo-jordan-9975",
+      "message": "Hi, do you have the Harbor Blue Hoodie? I'd like 1.",
+      "seconds": 3.58,
+      "reply": "I cannot confirm the availability of the Harbor Blue Hoodie right now. If you'd like, please provide your full name and email or phone number, and our team will follow up with you personally about availability.",
+      "trace": "agent → check_inventory(not_confirmed)"
+    },
+    {
+      "customer": "Customer B",
+      "session": "demo-jordan-9975",
+      "message": "Sure, please have the team contact me. I'm Jordan Lee, jordan.lee@example.com",
+      "seconds": 5.05,
+      "reply": "Thank you, Jordan Lee. Your details are saved with reference LH-0CRA7DG7U. Our team will follow up personally about the availability of the Harbor Blue Hoodie.",
+      "trace": "agent → capture_order(follow_up_logged)"
+    },
+    {
+      "customer": "Customer C",
+      "session": "demo-sam-07a5",
+      "message": "Can I get 10 Selvedge Denim Jackets?",
+      "seconds": 3.56,
+      "reply": "I cannot confirm availability of 10 Selvedge Denim Jackets right now. If you provide your full name and email or phone number, I can have our team follow up with you personally about availability.",
+      "trace": "agent → check_inventory(not_confirmed)"
+    }
+  ],
+  "sheet": {
+    "Harbor Blue Hoodie": {
+      "stock": "2",
+      "pending": "2"
+    },
+    "Everyday White Tee": {
+      "stock": "40",
+      "pending": "0"
+    },
+    "Selvedge Denim Jacket": {
+      "stock": "6",
+      "pending": "0"
+    },
+    "Merino Rib Beanie": {
+      "stock": "3",
+      "pending": "0"
+    },
+    "Heavy Canvas Tote": {
+      "stock": "25",
+      "pending": "0"
+    },
+    "Trail Crew Socks (3-Pack)": {
+      "stock": "12",
+      "pending": "0"
+    }
+  },
+  "notion_orders": [
+    {
+      "order": "LH-0CRA7DG7U",
+      "customer": "Jordan Lee",
+      "product": "Harbor Blue Hoodie",
+      "qty": 1,
+      "status": "Follow-up",
+      "reserved": false
+    },
+    {
+      "order": "LH-0CR2XTMAS",
+      "customer": "Alex Kim",
+      "product": "Harbor Blue Hoodie",
+      "qty": 2,
+      "status": "Pending",
+      "reserved": true
+    }
+  ],
+  "dashboard_orders": [
+    {
+      "order_ref": "LH-0CR2XTMAS",
+      "customer_display": "Alex K.",
+      "product_name": "Harbor Blue Hoodie",
+      "quantity": 2,
+      "status": "Pending"
+    },
+    {
+      "order_ref": "LH-0CRA7DG7U",
+      "customer_display": "Jordan L.",
+      "product_name": "Harbor Blue Hoodie",
+      "quantity": 1,
+      "status": "Follow-up"
+    }
+  ],
+  "n8n_executions": [
+    {
+      "id": "2393",
+      "what": [
+        "chat message"
+      ],
+      "input": "Hi! Is the Harbor Blue Hoodie available? I'd like 2.",
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2393"
+    },
+    {
+      "id": "2394",
+      "what": [
+        "check_inventory -> available"
+      ],
+      "input": {
+        "tool": "check_inventory",
+        "product": "Harbor Blue Hoodie",
+        "quantity": 2,
+        "customer_name": null
+      },
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2394"
+    },
+    {
+      "id": "2395",
+      "what": [
+        "chat message"
+      ],
+      "input": "Great, I'll take both. I'm Alex Kim, alex.kim@example.com",
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2395"
+    },
+    {
+      "id": "2396",
+      "what": [
+        "capture_order -> Pending + reserved"
+      ],
+      "input": {
+        "tool": "capture_order",
+        "product": "Harbor Blue Hoodie",
+        "quantity": 2,
+        "customer_name": "Alex Kim"
+      },
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2396"
+    },
+    {
+      "id": "2398",
+      "what": [
+        "chat message"
+      ],
+      "input": "Hi, do you have the Harbor Blue Hoodie? I'd like 1.",
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2398"
+    },
+    {
+      "id": "2399",
+      "what": [
+        "check_inventory -> NOT confirmed (IF node false branch)"
+      ],
+      "input": {
+        "tool": "check_inventory",
+        "product": "Harbor Blue Hoodie",
+        "quantity": 1,
+        "customer_name": null
+      },
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2399"
+    },
+    {
+      "id": "2400",
+      "what": [
+        "chat message"
+      ],
+      "input": "Sure, please have the team contact me. I'm Jordan Lee, jordan.lee@example.com",
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2400"
+    },
+    {
+      "id": "2401",
+      "what": [
+        "capture_order -> Follow-up, nothing reserved"
+      ],
+      "input": {
+        "tool": "capture_order",
+        "product": "Harbor Blue Hoodie",
+        "quantity": 1,
+        "customer_name": "Jordan Lee"
+      },
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2401"
+    },
+    {
+      "id": "2402",
+      "what": [
+        "chat message"
+      ],
+      "input": "Can I get 10 Selvedge Denim Jackets?",
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2402"
+    },
+    {
+      "id": "2403",
+      "what": [
+        "check_inventory -> NOT confirmed (IF node false branch)"
+      ],
+      "input": {
+        "tool": "check_inventory",
+        "product": "Selvedge Denim Jacket",
+        "quantity": 10,
+        "customer_name": null
+      },
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2403"
+    },
+    {
+      "id": "2404",
+      "what": [],
+      "input": null,
+      "url": "https://n8n.calmplant-7938ba96.switzerlandnorth.azurecontainerapps.io/workflow/vak17ugfzNS2qmfQ/executions/2404"
+    }
+  ]
+}

@@ -33,8 +33,8 @@ end;
 $$;
 
 -- ---------- Dashboard echo (Path B) ----------
--- Deliberately NO raw stock/pending numbers here: this table is publicly readable,
--- so it only carries the same coarse status the agent is allowed to say.
+-- live_state mirrors the Google Sheet rows for the dashboard's team view (stock, pending, coarse status).
+-- The customer-facing agent never receives these numbers; only the dashboard shows them.
 create table if not exists public.live_state (
   product_id   text primary key,
   product_name text not null,
@@ -42,6 +42,9 @@ create table if not exists public.live_state (
   last_event   text,
   updated_at   timestamptz not null default now()
 );
+alter table public.live_state add column if not exists stock int;
+alter table public.live_state add column if not exists pending int;
+alter table public.live_state add column if not exists sheet_row int;
 
 create table if not exists public.order_feed (
   notion_page_id   text primary key,
@@ -99,15 +102,16 @@ begin
 end $$;
 
 -- ---------- Seed (matches the clean demo starting state of the Google Sheet) ----------
-insert into public.live_state (product_id, product_name, status, last_event) values
-  ('LH-HOOD-BLU', 'Harbor Blue Hoodie',       'Limited',   'seed'),
-  ('LH-TEE-WHT',  'Everyday White Tee',       'Available', 'seed'),
-  ('LH-JKT-DNM',  'Selvedge Denim Jacket',    'Available', 'seed'),
-  ('LH-BEAN-GRY', 'Merino Rib Beanie',        'Limited',   'seed'),
-  ('LH-TOTE-NAT', 'Heavy Canvas Tote',        'Available', 'seed'),
-  ('LH-SOCK-3PK', 'Trail Crew Socks (3-Pack)','Available', 'seed')
+insert into public.live_state (product_id, product_name, stock, pending, sheet_row, status, last_event) values
+  ('LH-HOOD-BLU', 'Harbor Blue Hoodie',         2, 0, 2, 'Limited',   'seed'),
+  ('LH-TEE-WHT',  'Everyday White Tee',        40, 0, 3, 'Available', 'seed'),
+  ('LH-JKT-DNM',  'Selvedge Denim Jacket',      6, 0, 4, 'Available', 'seed'),
+  ('LH-BEAN-GRY', 'Merino Rib Beanie',          3, 0, 5, 'Limited',   'seed'),
+  ('LH-TOTE-NAT', 'Heavy Canvas Tote',         25, 0, 6, 'Available', 'seed'),
+  ('LH-SOCK-3PK', 'Trail Crew Socks (3-Pack)', 12, 0, 7, 'Available', 'seed')
 on conflict (product_id) do update
-  set product_name = excluded.product_name, status = excluded.status,
+  set product_name = excluded.product_name, stock = excluded.stock, pending = excluded.pending,
+      sheet_row = excluded.sheet_row, status = excluded.status,
       last_event = excluded.last_event, updated_at = now();
 
 -- ---------- Echo RPC (Path B) ----------
@@ -128,13 +132,23 @@ begin
         quantity = coalesce(excluded.quantity, order_feed.quantity),
         status = excluded.status, updated_at = now();
 
-  insert into public.live_state (product_id, product_name, status, last_event, updated_at)
-  select e->>'product_id', e->>'product_name', e->>'status', e->>'last_event', now()
+  -- only rows whose values changed are written, so the 30 s Sheet mirror doesn't spam Realtime
+  insert into public.live_state (product_id, product_name, stock, pending, sheet_row, status, last_event, updated_at)
+  select e->>'product_id', e->>'product_name', nullif(e->>'stock','')::int, nullif(e->>'pending','')::int,
+         nullif(e->>'sheet_row','')::int, e->>'status', e->>'last_event', now()
   from jsonb_array_elements(coalesce(p->'lives', '[]'::jsonb)) e
   where coalesce(e->>'product_id','') <> ''
   on conflict (product_id) do update
-    set product_name = excluded.product_name, status = excluded.status,
-        last_event = excluded.last_event, updated_at = now();
+    set product_name = excluded.product_name,
+        stock = coalesce(excluded.stock, live_state.stock),
+        pending = coalesce(excluded.pending, live_state.pending),
+        sheet_row = coalesce(excluded.sheet_row, live_state.sheet_row),
+        status = excluded.status, last_event = excluded.last_event, updated_at = now()
+    where live_state.product_name is distinct from excluded.product_name
+       or live_state.status is distinct from excluded.status
+       or live_state.stock is distinct from coalesce(excluded.stock, live_state.stock)
+       or live_state.pending is distinct from coalesce(excluded.pending, live_state.pending)
+       or live_state.sheet_row is distinct from coalesce(excluded.sheet_row, live_state.sheet_row);
 
   insert into public.agent_trace (session_id, intent, path)
   select e->>'session_id', e->>'intent', e->>'path'
@@ -147,23 +161,13 @@ begin
   return jsonb_build_object('ok', true);
 end $$;
 
--- Demo reset for the dashboard tables (Sheets + Notion are reset by the n8n reset workflow).
+-- Demo reset: clears the dashboard feed. live_state is re-synced from the Sheet by n8n right after,
+-- and sync_log is kept (it's the failure history, not demo data).
 create or replace function public.reset_dashboard() returns jsonb
 language plpgsql security definer set search_path = public as $$
 begin
   delete from public.order_feed where true;
   delete from public.agent_trace where true;
-  delete from public.sync_log where true;
-  insert into public.live_state (product_id, product_name, status, last_event) values
-    ('LH-HOOD-BLU', 'Harbor Blue Hoodie',       'Limited',   'reset'),
-    ('LH-TEE-WHT',  'Everyday White Tee',       'Available', 'reset'),
-    ('LH-JKT-DNM',  'Selvedge Denim Jacket',    'Available', 'reset'),
-    ('LH-BEAN-GRY', 'Merino Rib Beanie',        'Limited',   'reset'),
-    ('LH-TOTE-NAT', 'Heavy Canvas Tote',        'Available', 'reset'),
-    ('LH-SOCK-3PK', 'Trail Crew Socks (3-Pack)','Available', 'reset')
-  on conflict (product_id) do update
-    set product_name = excluded.product_name, status = excluded.status,
-        last_event = excluded.last_event, updated_at = now();
   return jsonb_build_object('ok', true);
 end $$;
 

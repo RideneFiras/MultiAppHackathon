@@ -1,0 +1,112 @@
+{
+  "summary": "11/11 checks passed",
+  "checks": [
+    {
+      "check": "start from the seed state (admin reset)",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "archived_orders": 2,
+        "released_units": 0,
+        "sheet_restored_to_seed": true,
+        "reset_at": "2026-09-13T21:51:08.549Z"
+      }
+    },
+    {
+      "check": "capture_order reserves 2 Merino Rib Beanies",
+      "pass": true,
+      "detail": {
+        "result": "order_captured",
+        "order_ref": "LH-0CM7CAEWQ",
+        "product": "Merino Rib Beanie",
+        "quantity": 2,
+        "next_step": "The team contacts the customer within 1 business day to confirm and arrange payment (never in chat).",
+        "dashboard_echo": "ok"
+      }
+    },
+    {
+      "check": "Sheet: beanie stock 3 / pending 2 before the reset",
+      "pass": true,
+      "detail": {
+        "product_id": "LH-BEAN-GRY",
+        "product_name": "Merino Rib Beanie",
+        "stock": "3",
+        "pending": "2"
+      }
+    },
+    {
+      "check": "simulate a manual stock correction in the Sheet (tote 25 -> 24)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "check": "POST /api/reset on the public dashboard works without a key",
+      "pass": true,
+      "detail": {
+        "http": 200,
+        "response": {
+          "ok": true,
+          "archived_orders": 1,
+          "released_units": 2
+        },
+        "seconds": 5.5
+      }
+    },
+    {
+      "check": "Notion: no active orders left",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "check": "Sheet: beanie reservation released (pending 2 -> 0, stock still 3)",
+      "pass": true,
+      "detail": {
+        "product_id": "LH-BEAN-GRY",
+        "product_name": "Merino Rib Beanie",
+        "stock": "3",
+        "pending": "0"
+      }
+    },
+    {
+      "check": "Sheet: stock not overwritten (tote keeps the manual value 24)",
+      "pass": true,
+      "detail": {
+        "product_id": "LH-TOTE-NAT",
+        "product_name": "Heavy Canvas Tote",
+        "stock": "24",
+        "pending": "0"
+      }
+    },
+    {
+      "check": "dashboard feed and trace cleared",
+      "pass": true,
+      "detail": {
+        "order_feed": 0,
+        "agent_trace": 0
+      }
+    },
+    {
+      "check": "dashboard inventory mirror matches the Sheet after the reset",
+      "pass": true,
+      "detail": {
+        "LH-BEAN-GRY": {
+          "product_id": "LH-BEAN-GRY",
+          "stock": 3,
+          "pending": 0,
+          "status": "Limited"
+        },
+        "LH-TOTE-NAT": {
+          "product_id": "LH-TOTE-NAT",
+          "stock": 24,
+          "pending": 0,
+          "status": "Available"
+        }
+      }
+    },
+    {
+      "check": "restore tote stock to 25",
+      "pass": true,
+      "detail": null
+    }
+  ]
+}

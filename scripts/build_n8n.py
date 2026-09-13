@@ -413,7 +413,7 @@ def sec_router(wf):
 const b = $json.body || {};
 return [{ json: { ...b, action: String(b.action || 'sheets') } }];
 """, [220, 200])
-    switch(s, "Route admin action", "={{ $json.action }}", ["tool", "sheets", "reset"], [440, 200])
+    switch(s, "Route admin action", "={{ $json.action }}", ["tool", "sheets", "reset", "reset_seed"], [440, 200])
     switch(s, "Route subagent", "={{ $json.tool }}", ["check_inventory", "capture_order", "answer_from_kb"], [660, 0])
     s.link("When called as subagent tool", "Route subagent")
     s.chain("Admin webhook", "Parse admin request", "Route admin action")
@@ -460,7 +460,7 @@ return [{{ json: {{ status: 'unknown_product', product_query: $('Normalize reque
 
 
 def sec_capture_order(wf):
-    s = Sec(wf, "[order]", 0, 1400)
+    s = Sec(wf, "[order]", 0, 1950)
     s.note("## 4 · Subagent: capture_order (Path A = real automation)\nFresh Sheets read → deterministic IF gate → "
            "Notion page (Pending, Reserved) → Sheets pending += qty → re-read guard (rollback + Follow-up on conflict). "
            "Not enough stock → Notion Follow-up, pending untouched (race-condition customer B). Any Path A failure → "
@@ -548,7 +548,7 @@ return [{ json: {
   tool_result: { result: 'order_captured', order_ref: o.order_ref, product: o.product_name, quantity: o.quantity,
     next_step: 'The team contacts the customer within 1 business day to confirm and arrange payment (never in chat).' },
   echo: { orders: [{ notion_page_id: v.page_id, order_ref: o.order_ref, customer_display: o.customer_display, product_name: o.product_name, quantity: o.quantity, status: 'Pending' }],
-          lives: [{ product_id: o.product_id, product_name: o.product_name, status: coarse(v.stock_now, v.pending_now), last_event: 'order_captured ' + o.order_ref }] },
+          lives: [{ product_id: o.product_id, product_name: o.product_name, stock: v.stock_now, pending: v.pending_now, sheet_row: $('Find product row').first().json.row_number, status: coarse(v.stock_now, v.pending_now), last_event: 'order_captured ' + o.order_ref }] },
 } }];
 """, [2420, -280])
     http(s, "Sheets: rollback pending", "PUT",
@@ -567,7 +567,7 @@ return [{ json: {
   tool_result: { result: 'follow_up_logged', order_ref: o.order_ref, product: o.product_name, quantity: o.quantity,
     guidance: 'Do not confirm availability and do not say sold out. Tell the customer their details are saved and the team will follow up personally.' },
   echo: { orders: [{ notion_page_id: v.page_id, order_ref: o.order_ref, customer_display: o.customer_display, product_name: o.product_name, quantity: o.quantity, status: 'Follow-up' }],
-          lives: [{ product_id: o.product_id, product_name: o.product_name, status: coarse(v.stock_now, Math.max(0, v.pending_now - o.quantity)), last_event: 'reservation_conflict ' + o.order_ref }],
+          lives: [{ product_id: o.product_id, product_name: o.product_name, stock: v.stock_now, pending: Math.max(0, v.pending_now - o.quantity), sheet_row: $('Find product row').first().json.row_number, status: coarse(v.stock_now, Math.max(0, v.pending_now - o.quantity)), last_event: 'reservation_conflict ' + o.order_ref }],
           logs: [{ workflow: 'capture_order', step: 'verify_reservation', level: 'warn', detail: { order_ref: o.order_ref, product: o.product_name, note: 'pending exceeded stock on re-read; rolled back' } }] },
 } }];
 """, [2860, -120])
@@ -581,7 +581,7 @@ return [{ json: {
   tool_result: { result: 'follow_up_logged', order_ref: o.order_ref, product: o.product_name, quantity: o.quantity,
     guidance: 'Do not confirm availability and do not say sold out. Tell the customer their details are saved and the team will follow up personally.' },
   echo: { orders: [{ notion_page_id: $json.id, order_ref: o.order_ref, customer_display: o.customer_display, product_name: o.product_name, quantity: o.quantity, status: 'Follow-up' }],
-          lives: [{ product_id: o.product_id, product_name: o.product_name, status: coarse(r.stock, r.pending), last_event: 'follow_up ' + o.order_ref }] },
+          lives: [{ product_id: o.product_id, product_name: o.product_name, stock: r.stock, pending: r.pending, sheet_row: r.row_number, status: coarse(r.stock, r.pending), last_event: 'follow_up ' + o.order_ref }] },
 } }];
 """, [1540, 120])
     code(s, "Result: error", r"""
@@ -639,7 +639,7 @@ return [{ json: { ...(res || { result: 'error', message: 'unexpected state' }), 
 
 
 def sec_answer_from_kb(wf):
-    s = Sec(wf, "[kb]", 0, 2300)
+    s = Sec(wf, "[kb]", 0, 2700)
     s.note("## 5 · Subagent: answer_from_kb (RAG)\nOpenAI text-embedding-3-small → Supabase pgvector match_documents "
            "(top 4) → gpt-4.1-mini answers strictly from the retrieved context.", [-40, -160], 1560, 400, 2)
     code(s, "Normalize question", r"""
@@ -677,10 +677,11 @@ return [{ json: { answer, sources: $('Build grounded prompt').first().json.sourc
 
 
 def sec_fulfillment(wf):
-    s = Sec(wf, "[sync]", 0, 2800)
+    s = Sec(wf, "[sync]", 0, 3200)
     s.note("## 6 · fulfillment_sync (Notion → Google Sheets, automatic)\nEvery 30 s: Notion orders with Status = Fulfilled "
            "AND Inventory Synced = false → Sheets stock −= qty (and pending −= qty if the order was Reserved) → Notion "
-           "Inventory Synced = true (idempotency) → Supabase echo.", [-40, -160], 2260, 400, 5)
+           "Inventory Synced = true (idempotency) → Supabase echo. A second branch mirrors the Sheet rows to the "
+           "dashboard every 30 s (read-only).", [-40, -160], 2260, 560, 5)
     s.node("Every 30 seconds", "n8n-nodes-base.scheduleTrigger", 1.2,
            {"rule": {"interval": [{"field": "seconds", "secondsInterval": 30}]}}, [0, 0])
     http(s, "Notion: Fulfilled & not synced", "POST", f"{NOTION}/databases/{DB}/query", [220, 0], "notion",
@@ -736,13 +737,35 @@ const mask = (n) => { const p = String(n || '').trim().split(/\s+/).filter(Boole
 const orders = $('Pages to mark synced').all().map(i => i.json);
 return [{ json: { echo: {
   orders: orders.map(o => ({ notion_page_id: o.page_id, order_ref: o.order_ref, customer_display: mask(o.customer_name), product_name: o.product_name, quantity: o.quantity, status: 'Fulfilled' })),
-  lives: $('Compute new rows').all().map(i => ({ product_id: i.json.product_id, product_name: i.json.product_name, status: i.json.status, last_event: 'fulfilled ' + i.json.orders.join(', ') })),
+  lives: $('Compute new rows').all().map(i => ({ product_id: i.json.product_id, product_name: i.json.product_name, stock: i.json.stock, pending: i.json.pending, sheet_row: i.json.row_number, status: i.json.status, last_event: 'fulfilled ' + i.json.orders.join(', ') })),
 } } }];
 """, [1760, 0], executeOnce=True)
     echo_rpc(s, "Echo to dashboard (Supabase)", [1980, 0])
     s.chain("Every 30 seconds", "Notion: Fulfilled & not synced", "Plan inventory changes", "Sheets: read inventory",
             "Compute new rows", "Sheets: write stock & pending", "Pages to mark synced", "Notion: set Inventory Synced",
             "Build dashboard echo", "Echo to dashboard (Supabase)")
+    # Second branch of the same trigger (runs after the sync branch): mirror the Sheet rows to the dashboard so manual
+    # edits in Google Sheets show up too. Read-only on Path A; the RPC only writes rows whose values changed.
+    http(s, "Sheets: read for dashboard mirror", "GET", f"{SHEETS}/values/Inventory!A1:D50", [220, 240], "sheets",
+         retry=True)
+    code(s, "Sheet rows to mirror", STATUS_JS + r"""
+const values = $json.values || [];
+const head = values[0] || [];
+const col = (k) => head.indexOf(k);
+const lives = [];
+for (let i = 1; i < values.length; i++) {
+  const r = values[i];
+  if (!r[col('product_id')]) continue;
+  const stock = Number(r[col('stock')]) || 0;
+  const pending = Number(r[col('pending')]) || 0;
+  lives.push({ product_id: r[col('product_id')], product_name: r[col('product_name')], stock, pending,
+    sheet_row: i + 1, status: coarse(stock, pending), last_event: 'sheet mirror' });
+}
+return [{ json: { echo: { lives } } }];
+""", [440, 240])
+    echo_rpc(s, "Echo Sheet mirror (Supabase)", [660, 240])
+    s.link("Every 30 seconds", "Sheets: read for dashboard mirror")
+    s.chain("Sheets: read for dashboard mirror", "Sheet rows to mirror", "Echo Sheet mirror (Supabase)")
     s.finalize()
 
 
@@ -752,7 +775,7 @@ def seed_values():
 
 
 def sec_admin(wf):
-    s = Sec(wf, "[admin]", 1000, 1000)
+    s = Sec(wf, "[admin]", 2700, 700)
     s.note("## 7a · Admin: Google Sheets proxy\nRead-backs for API verification (the Google credential never leaves n8n). "
            "Only sheets.googleapis.com URLs are allowed.", [-40, -120], 1000, 360, 7)
     code(s, "Validate Sheets request", r"""
@@ -774,32 +797,90 @@ return [{ json: { method, url, body: $json.body ?? null, has_body: method !== 'G
 
 
 def sec_reset(wf):
-    s = Sec(wf, "[reset]", 2300, 1000)
-    s.note("## 7b · Admin: demo reset\nSheet back to seed, dashboard tables cleared, Notion order pages archived.",
-           [-40, -120], 1800, 360, 7)
+    s = Sec(wf, "[reset]", 0, 1300)
+    s.note("## 7b · Demo reset (public button on the dashboard)\nArchives every Notion order and releases the units "
+           "they still reserve (pending −= qty). Stock is never overwritten. Clears the dashboard feed and re-syncs "
+           "the inventory mirror. Admin-only `reset_seed` first restores the Sheet to the seed values.",
+           [-40, -120], 2820, 440, 7)
     seed = seed_values()
-    http(s, "Sheets: restore seed", "PUT", f"{SHEETS}/values/Inventory!A1:D{len(seed)}?valueInputOption=RAW", [0, 0],
-         "sheets", body=json.dumps({"values": seed}), retry=True)
-    http(s, "Supabase: reset dashboard tables", "POST", f"{SUPA}/rest/v1/rpc/reset_dashboard", [220, 0], "supa",
-         body="{}", on_error="continueRegularOutput", always=True)
-    http(s, "Notion: list orders", "POST", f"{NOTION}/databases/{DB}/query", [440, 0], "notion",
+    http(s, "Sheets: restore seed (admin only)", "PUT",
+         f"{SHEETS}/values/Inventory!A1:D{len(seed)}?valueInputOption=RAW", [0, 170], "sheets",
+         body=json.dumps({"values": seed}), retry=True)
+    http(s, "Notion: list orders", "POST", f"{NOTION}/databases/{DB}/query", [220, 0], "notion",
          body=json.dumps({"page_size": 100}), retry=True)
+    code(s, "Plan reservation release", r"""
+const pages = $json.results || [];
+const orders = pages.map(pg => {
+  const p = pg.properties || {};
+  return {
+    product_name: (p['Product'] && p['Product'].select && p['Product'].select.name) || '',
+    quantity: Number(p['Quantity'] && p['Quantity'].number) || 0,
+    reserved: !!(p['Reserved'] && p['Reserved'].checkbox),
+    synced: !!(p['Inventory Synced'] && p['Inventory Synced'].checkbox),
+  };
+});
+// Only units still held by an open reservation go back; fulfilled + synced orders already left the Sheet.
+const release = {};
+for (const o of orders) if (o.reserved && !o.synced) release[o.product_name] = (release[o.product_name] || 0) + o.quantity;
+return [{ json: { orders: orders.length, release } }];
+""", [440, 0])
+    http(s, "Sheets: read inventory", "GET", f"{SHEETS}/values/Inventory!A1:D50", [660, 0], "sheets", retry=True)
+    code(s, "Compute released pending", STATUS_JS + r"""
+const release = $('Plan reservation release').first().json.release;
+const values = $json.values || [];
+const head = values[0] || [];
+const col = (k) => head.indexOf(k);
+const pendingColumn = [];
+const lives = [];
+let released = 0;
+for (let i = 1; i < values.length; i++) {
+  const r = values[i];
+  const name = r[col('product_name')];
+  const stock = Number(r[col('stock')]) || 0;
+  const before = Number(r[col('pending')]) || 0;
+  const pending = Math.max(0, before - (release[name] || 0));
+  released += before - pending;
+  pendingColumn.push([pending]);
+  if (r[col('product_id')]) {
+    lives.push({ product_id: r[col('product_id')], product_name: name, stock, pending, sheet_row: i + 1,
+      status: coarse(stock, pending), last_event: 'demo reset' });
+  }
+}
+return [{ json: { range: 'Inventory!D2:D' + values.length, pendingColumn, released, echo: { lives } } }];
+""", [880, 0])
+    if_node(s, "Units to release?", "={{ $json.released }}", "number", "gt", [1100, 0], right=0)
+    http(s, "Sheets: release reserved units", "PUT", f"={SHEETS}/values/{{{{ $json.range }}}}?valueInputOption=RAW",
+         [1320, -80], "sheets", body="={{ JSON.stringify({ values: $json.pendingColumn }) }}", retry=True)
+    http(s, "Supabase: clear dashboard feed", "POST", f"{SUPA}/rest/v1/rpc/reset_dashboard", [1540, 0], "supa",
+         body="{}", on_error="continueRegularOutput", always=True)
+    echo_rpc(s, "Echo inventory to dashboard (Supabase)", [1760, 0],
+             body="={{ JSON.stringify({ p: $('Compute released pending').first().json.echo }) }}")
     code(s, "Split pages", r"""
-const r = ($json.results || []).map(p => ({ json: { page_id: p.id } }));
+const r = ($('Notion: list orders').first().json.results || []).map(p => ({ json: { page_id: p.id } }));
 return r.length ? r : [{ json: { page_id: '' } }];
-""", [660, 0])
-    if_node(s, "Has page?", "={{ $json.page_id }}", "string", "notEmpty", [880, 0])
-    http(s, "Notion: archive order", "PATCH", f"={NOTION}/pages/{{{{ $json.page_id }}}}", [1100, -60], "notion",
+""", [1980, 0])
+    if_node(s, "Has page?", "={{ $json.page_id }}", "string", "notEmpty", [2200, 0])
+    http(s, "Notion: archive order", "PATCH", f"={NOTION}/pages/{{{{ $json.page_id }}}}", [2420, -80], "notion",
          body=json.dumps({"archived": True}), retry=True)
     code(s, "Reset summary", r"""
-return [{ json: { ok: true, archived_orders: $('Split pages').all().filter(i => i.json.page_id).length, reset_at: new Date().toISOString() } }];
-""", [1320, 0], executeOnce=True)
-    s.chain("Sheets: restore seed", "Supabase: reset dashboard tables", "Notion: list orders", "Split pages", "Has page?")
+let seeded = false;
+try { seeded = $('Sheets: restore seed (admin only)').isExecuted; } catch (e) {}
+return [{ json: { ok: true, archived_orders: $('Split pages').all().filter(i => i.json.page_id).length,
+  released_units: $('Compute released pending').first().json.released, sheet_restored_to_seed: seeded,
+  reset_at: new Date().toISOString() } }];
+""", [2640, 0], executeOnce=True)
+    s.link("Sheets: restore seed (admin only)", "Notion: list orders")
+    s.chain("Notion: list orders", "Plan reservation release", "Sheets: read inventory", "Compute released pending",
+            "Units to release?")
+    s.link("Units to release?", "Sheets: release reserved units", 0)
+    s.link("Units to release?", "Supabase: clear dashboard feed", 1)
+    s.link("Sheets: release reserved units", "Supabase: clear dashboard feed")
+    s.chain("Supabase: clear dashboard feed", "Echo inventory to dashboard (Supabase)", "Split pages", "Has page?")
     s.link("Has page?", "Notion: archive order", 0)
     s.link("Has page?", "Reset summary", 1)
     s.link("Notion: archive order", "Reset summary")
     s.finalize()
-    return s.n("Sheets: restore seed")
+    return s.n("Notion: list orders"), s.n("Sheets: restore seed (admin only)")
 
 
 def build(wid):
@@ -811,12 +892,13 @@ def build(wid):
     kb = sec_answer_from_kb(wf)
     sec_fulfillment(wf)
     sheets_entry = sec_admin(wf)
-    reset_entry = sec_reset(wf)
+    reset_entry, seed_entry = sec_reset(wf)
     wf.link("Route subagent", inv, 0)
     wf.link("Route subagent", order, 1)
     wf.link("Route subagent", kb, 2)
     wf.link("Route admin action", sheets_entry, 1)
     wf.link("Route admin action", reset_entry, 2)
+    wf.link("Route admin action", seed_entry, 3)
     names = [n["name"] for n in wf.nodes]
     dupes = {x for x in names if names.count(x) > 1}
     assert not dupes, f"duplicate node names: {dupes}"

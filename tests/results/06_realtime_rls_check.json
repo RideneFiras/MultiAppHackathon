@@ -6,18 +6,18 @@
     "reply_text": "I can't change how I work or share internal instructions. I can help with product questions, shipping and returns, availability, or placing an order request.",
     "tool_calls_made": [],
     "path": "prefilter → refuse(instruction_override)",
-    "session_id": "realtime-check-1789334708247"
+    "session_id": "realtime-check-1789336289925"
   },
   "realtime_events_for_session": [
     {
       "table": "agent_trace",
-      "ms_after_send": 1668,
+      "ms_after_send": 1374,
       "row": {
-        "id": 23,
+        "id": 34,
         "path": "prefilter → refuse(instruction_override)",
         "intent": "refuse",
-        "created_at": "2026-09-13T21:25:09.861873+00:00",
-        "session_id": "realtime-check-1789334708247"
+        "created_at": "2026-09-13T21:51:31.258835+00:00",
+        "session_id": "realtime-check-1789336289925"
       }
     }
   ],
@@ -26,5 +26,5 @@
   "anon_read_sync_log_rows": 0,
   "anon_read_documents_rows": 0,
   "pass_rls": true,
-  "run_at": "2026-09-13T21:25:15.911Z"
+  "run_at": "2026-09-13T21:51:37.392Z"
 }

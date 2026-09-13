@@ -60,7 +60,7 @@ def supa_get(path):
 
 
 evidence = {}
-st, r = admin({"action": "reset"})
+st, r = admin({"action": "reset_seed"})
 check("reset demo through the n8n workflow", st == 200 and (r or {}).get("ok"), r)
 time.sleep(3)
 row = hoodie_row()
@@ -97,10 +97,11 @@ check("Notion: B logged with Status Follow-up, not Reserved",
 row = hoodie_row()
 check("Sheet: pending NOT incremented for B (still 2)", row["pending"] == "2" and row["stock"] == "2", row)
 feed = supa_get("/order_feed?select=order_ref,customer_display,product_name,quantity,status&order=created_at.asc")
-live = supa_get("/live_state?select=product_name,status&product_id=eq.LH-HOOD-BLU")
+live = supa_get("/live_state?select=product_name,stock,pending,status&product_id=eq.LH-HOOD-BLU")
 check("Supabase echo: order_feed = A Pending + B Follow-up with masked names",
       [f["status"] for f in feed] == ["Pending", "Follow-up"] and [f["customer_display"] for f in feed] == ["Alex K.", "Jordan L."], feed)
-check("Supabase echo: live_state hoodie = 'Pending team review' (no numbers)", live and live[0]["status"] == "Pending team review", live)
+check("Dashboard mirror: hoodie row matches the Sheet (stock 2, pending 2, Pending team review)",
+      live and live[0]["stock"] == 2 and live[0]["pending"] == 2 and live[0]["status"] == "Pending team review", live)
 evidence["after_race"] = {"notion": orders, "sheet_hoodie": row, "order_feed": feed, "live_state": live}
 
 # ---- fulfillment sync (Notion -> Sheets), nobody talks to the agent
@@ -118,8 +119,9 @@ check("Fulfillment: Sheet stock 2->0, pending 2->0 and Inventory Synced=true in 
       synced is not None and synced < 60, {"seconds": synced, "sheet_hoodie": row})
 time.sleep(3)
 feed = supa_get("/order_feed?select=order_ref,customer_display,status&order=created_at.asc")
-live = supa_get("/live_state?select=product_name,status,last_event&product_id=eq.LH-HOOD-BLU")
+live = supa_get("/live_state?select=product_name,stock,pending,status,last_event&product_id=eq.LH-HOOD-BLU")
 check("Supabase echo after fulfillment: A = Fulfilled", feed and feed[0]["status"] == "Fulfilled", feed)
+check("Dashboard mirror after fulfillment: hoodie stock 0 / pending 0", live and live[0]["stock"] == 0 and live[0]["pending"] == 0, live)
 evidence["after_fulfillment"] = {"seconds_to_sync": synced, "sheet_hoodie": row, "order_feed": feed, "live_state": live}
 
 time.sleep(40)  # at least one more 30 s poll
