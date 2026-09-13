@@ -105,15 +105,44 @@ Two minutes isn't much, so here's the rest. All of it is tested (see [How we tes
 
 ## How it works
 
-**When a customer writes**
+```mermaid
+flowchart TD
+  C["Customer message"] --> PF
+  subgraph N8N["n8n: one workflow"]
+    PF{"Injection filter:<br/>looks like an attack?"}
+    PF -->|yes| RF["Fixed, polite refusal<br/>(the AI never sees it)"]
+    PF -->|no| AG["Orchestrator agent<br/>gpt-4.1-mini, reply checked before sending"]
+    AG --> CI["check_inventory"]
+    AG --> CO["capture_order"]
+    AG --> KB["answer_from_kb"]
+    CI --> Q1{"Enough unreserved<br/>stock in the Sheet?"}
+    Q1 -->|yes| AV["returns: available"]
+    Q1 -->|no| NC["returns: not confirmed"]
+    CO --> Q2{"Enough unreserved<br/>stock in the Sheet?"}
+    Q2 -->|yes| PE["Order: Pending<br/>units reserved"]
+    Q2 -->|no| FU["Order: Follow-up<br/>nothing reserved"]
+    PE -->|team marks it Fulfilled| FS["fulfillment_sync<br/>checks Notion every 30 s"]
+  end
+  KB --> SB[("Supabase<br/>knowledge base")]
+  PE --> NO[("Notion")]
+  FU --> NO
+  PE --> GS[("Google Sheets")]
+  FS -->|stock and pending| GS
+  N8N -.->|every change| EC[("Supabase echo")]
+  EC -.->|Realtime| DB["Live dashboard"]
+  classDef guard fill:#fde8e6,stroke:#b42318,color:#7a1c14
+  classDef agentc fill:#efe9fb,stroke:#6d4fc2,color:#3b2a74
+  classDef tool fill:#e7eef6,stroke:#1f3a5f,color:#1f3a5f
+  classDef cond fill:#fff4d6,stroke:#b58100,color:#5c4200
+  classDef app fill:#e6f4ea,stroke:#188038,color:#0d5323
+  class PF,RF guard
+  class AG agentc
+  class CI,CO,KB,FS tool
+  class Q1,Q2 cond
+  class GS,NO,SB,EC app
+```
 
-<img src="docs/images/architecture-chat.png" alt="Customer message goes through the injection filter, then the orchestrator agent, which uses three subagents connected to Google Sheets, Notion and Supabase" width="620">
-
-**In the background**
-
-<img src="docs/images/background.png" alt="Orders marked Fulfilled in Notion update Google Sheets every 30 seconds; every change is mirrored to Supabase for the live dashboard" width="720">
-
-<sub>Red: guardrails · Purple: the agent · Blue: subagents · Green: the three apps · Diagram sources: [docs/architecture.mmd](docs/architecture.mmd), [docs/background.mmd](docs/background.mmd)</sub>
+<sub>Diagram not loading? [View it as an image](docs/images/system-diagram.png)</sub>
 
 The **orchestrator** is an n8n AI Agent (OpenAI `gpt-4.1-mini`) that works out what the customer needs. It can only act through three **subagents**, each a branch of the same n8n workflow:
 
