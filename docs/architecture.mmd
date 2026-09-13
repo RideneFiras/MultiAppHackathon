@@ -1,34 +1,21 @@
 flowchart TD
-    customer["Customer message"] --> filter
-    subgraph workflow["One n8n workflow"]
-        filter{"Injection filter"}
-        refusal["Fixed, polite refusal"]
-        agent["Orchestrator agent (gpt-4.1-mini)"]
-        inventory["check_inventory"]
-        capture["capture_order"]
-        kb["answer_from_kb"]
-        check["Reply check"]
-        sync["fulfillment_sync, every 30 s"]
-        filter -- "attack" --> refusal
-        filter -- "safe" --> agent
-        agent --> inventory
-        agent --> capture
-        agent --> kb
-        agent --> check
-    end
-    inventory --> sheets[("Google Sheets")]
-    capture --> sheets
-    capture --> notion[("Notion")]
-    kb --> supabase[("Supabase")]
-    notion -- "order marked Fulfilled" --> sync
-    sync --> sheets
-    check --> reply["Reply to customer"]
-    refusal --> reply
-    capture -.-> dashboard(["Live dashboard"])
-    sync -.-> dashboard
+    customer["Customer message"] --> filter{"Injection filter"}
+    filter -- "attack" --> refusal["Polite, fixed refusal<br/>(the AI never sees it)"]
+    filter -- "safe" --> agent["Orchestrator agent<br/>gpt-4.1-mini, reply is checked before sending"]
+    agent --> inventory["check_inventory"]
+    agent --> capture["capture_order"]
+    agent --> kb["answer_from_kb"]
+    inventory -- "available / not confirmed" --> sheets[("Google Sheets")]
+    capture -- "reserve units" --> sheets
+    capture -- "new order" --> notion[("Notion")]
+    kb -- "store policies" --> supabase[("Supabase")]
     classDef guard fill:#fde8e6,stroke:#b42318,color:#7a1c14
+    classDef agentc fill:#efe9fb,stroke:#6d4fc2,color:#3b2a74
     classDef tool fill:#e7eef6,stroke:#1f3a5f,color:#1f3a5f
     classDef app fill:#e6f4ea,stroke:#188038,color:#0d5323
-    class filter,refusal,check guard
-    class inventory,capture,kb,sync tool
+    classDef plain fill:#ffffff,stroke:#9aa0a6,color:#202124
+    class customer plain
+    class filter,refusal guard
+    class agent agentc
+    class inventory,capture,kb tool
     class sheets,notion,supabase app

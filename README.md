@@ -105,9 +105,15 @@ Two minutes isn't much, so here's the rest. All of it is tested (see [How we tes
 
 ## How it works
 
-<img src="docs/images/architecture.png" alt="How Loomhaus works: injection filter, orchestrator agent, three subagents, Google Sheets, Notion, Supabase" width="720">
+**When a customer writes**
 
-<sub>Red: guardrails · Blue: subagents · Green: the three apps · Diagram source: [docs/architecture.mmd](docs/architecture.mmd)</sub>
+<img src="docs/images/architecture.png" alt="Customer message goes through the injection filter, then the orchestrator agent, which uses three subagents connected to Google Sheets, Notion and Supabase" width="620">
+
+**In the background**
+
+<img src="docs/images/background.png" alt="Orders marked Fulfilled in Notion update Google Sheets every 30 seconds; every change is mirrored to Supabase for the live dashboard" width="720">
+
+<sub>Red: guardrails · Purple: the agent · Blue: subagents · Green: the three apps · Diagram sources: [docs/architecture.mmd](docs/architecture.mmd), [docs/background.mmd](docs/background.mmd)</sub>
 
 The **orchestrator** is an n8n AI Agent (OpenAI `gpt-4.1-mini`) that works out what the customer needs. It can only act through three **subagents**, each a branch of the same n8n workflow:
 
