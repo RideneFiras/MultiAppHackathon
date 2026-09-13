@@ -106,40 +106,29 @@ Two minutes isn't much, so here's the rest. All of it is tested (see [How we tes
 ## How it works
 
 ```mermaid
-flowchart TD
-    customer["Customer message"] --> filter
-    subgraph workflow["One n8n workflow"]
-        filter{"Injection filter"}
-        refusal["Fixed, polite refusal"]
-        agent["Orchestrator agent (gpt-4.1-mini)"]
-        inventory["check_inventory"]
-        capture["capture_order"]
-        kb["answer_from_kb"]
-        check["Reply check"]
-        sync["fulfillment_sync, every 30 s"]
-        filter -- "attack" --> refusal
-        filter -- "safe" --> agent
-        agent --> inventory
-        agent --> capture
-        agent --> kb
-        agent --> check
-    end
-    inventory --> sheets[("Google Sheets")]
-    capture --> sheets
-    capture --> notion[("Notion")]
-    kb --> supabase[("Supabase")]
-    notion -- "order marked Fulfilled" --> sync
-    sync --> sheets
-    check --> reply["Reply to customer"]
-    refusal --> reply
-    capture -.-> dashboard(["Live dashboard"])
-    sync -.-> dashboard
-    classDef guard fill:#fde8e6,stroke:#b42318,color:#7a1c14
-    classDef tool fill:#e7eef6,stroke:#1f3a5f,color:#1f3a5f
-    classDef app fill:#e6f4ea,stroke:#188038,color:#0d5323
-    class filter,refusal,check guard
-    class inventory,capture,kb,sync tool
-    class sheets,notion,supabase app
+flowchart LR
+  C["Customer message"] --> PF
+  subgraph N8N["n8n: one workflow"]
+    PF{"Injection filter"}
+    PF -->|attack| RF[Fixed refusal]
+    PF -->|safe| AG["Orchestrator agent<br/>gpt-4.1-mini"]
+    AG --> CI[check_inventory]
+    AG --> CO[capture_order]
+    AG --> KB[answer_from_kb]
+    AG --> OG[Reply check]
+    RF --> RS[Reply to customer]
+    OG --> RS
+    TM[Every 30 s] --> FS[fulfillment_sync]
+  end
+  CI --> GS[(Google Sheets)]
+  CO --> GS
+  CO --> NO[(Notion)]
+  NO -->|order Fulfilled| FS
+  FS --> GS
+  KB --> VEC[(Supabase pgvector)]
+  CO -.-> ECHO[(Supabase echo)]
+  FS -.-> ECHO
+  ECHO -. Realtime .-> DASH[Live dashboard]
 ```
 
 The **orchestrator** is an n8n AI Agent (OpenAI `gpt-4.1-mini`) that works out what the customer needs. It can only act through three **subagents**, each a branch of the same n8n workflow:
