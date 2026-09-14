@@ -6,7 +6,7 @@
 ███████╗╚██████╔╝╚██████╔╝██║ ╚═╝ ██║██║  ██║██║  ██║╚██████╔╝███████║
 ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
 ```
-
+( this project was done in 5 hours for a hackathon )
 **Loomhaus is an AI support agent for an online store.** It answers customers, checks what's actually in stock, turns conversations into orders for the team, and won't be talked into a discount.
 
 [![Try it live](https://img.shields.io/badge/Try%20it%20live-loomhaus--agent.vercel.app-1f3a5f?style=for-the-badge&logo=vercel&logoColor=white)](https://loomhaus-agent.vercel.app)
